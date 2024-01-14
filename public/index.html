@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphing the internet</title>
+    <style>
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            background-color: #333333;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #input-row {
+            width: 100vw;
+            height: 40px;
+        }
+
+        #graph {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="input-row">
+        <form id="add-node-form">
+            <input name="url" type="url"></input>
+            <input name="depth" type="number" value="2"></input>
+            <button type="submit">Add URL</button>
+        </form>
+        <button id="layout-button">Apply layout</button>
+    </div>
+    <div id="graph"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js" integrity="sha512-RcuA+PEnJcg1caTn53YLhZ3bYVFXphzcPL1BjBoAwFiA3bErav+AndZz1xrqpAtv/8Waep2X+9zn8KWpwacUSA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://unpkg.com/layout-base/layout-base.js"></script>
+    <script src="https://unpkg.com/cose-base/cose-base.js"></script>
+    <script src="https://unpkg.com/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script src="https://unpkg.com/avsdf-base@1.0.0/avsdf-base.js"></script>
+    <script src="https://unpkg.com/cytoscape-cise@1.0.0/cytoscape-cise.js"></script>
+    <script src="./code.js"></script>
+</body>
+</html>
