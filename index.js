@@ -4,6 +4,8 @@ const server = require('http').createServer(app);
 const cheerio = require('cheerio');
 const { default: axios } = require('axios');
 
+let concurrentRequestsRunning = 0;
+
 app.use(express.static('public'));
 
 app.get("/scrape", async (req, res) => {
@@ -16,6 +18,10 @@ app.get("/scrape", async (req, res) => {
     }
 
     let data = []
+
+    while (concurrentRequestsRunning >= 10) {}
+
+    concurrentRequestsRunning++;
 
     try {
         let site = await (await axios.get(url)).data
@@ -34,6 +40,8 @@ app.get("/scrape", async (req, res) => {
     } catch (e) {
         res.status(500).send(e)
     }
+
+    concurrentRequestsRunning--;
 })
 
 const PORT = process.env.PORT || 3000;

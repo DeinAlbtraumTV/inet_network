@@ -76,62 +76,80 @@ const cy = cytoscape({
     elements: [],
 })
 
+let nodeIdsVisited = []
+
 async function doScrape(_url, depth, currentDepth = 0) {
+    if (nodeIdsVisited.find(val => val == _url)) {
+        let elems = cy.getElementById(_url.href)
+        let elem = elems[0]
+        if (elem) {
+            let edges = elem.connectedEdges()
+            await edges.map(async (edge) => {
+                let node = edge.target()
+                let id = node.id()
+                await doScrape(id, depth, currentDepth + 1)
+            })
+        }
+    };
+    nodeIdsVisited.push(_url)
+    console.log(nodeIdsVisited)
     console.log("Running fetch for depth: ", depth, " and current depth: ", currentDepth)
     fetch("/scrape?url=" + encodeURIComponent(_url), {cache: "no-store"}).then(async (res) => {
-        let resData = await res.json()
-        let graphData = {
-            nodes: [],
-            edges: []
-        }
-
-        graphData.nodes.push({
-            data: {
-                id: resData.parent,
-                label: resData.parent
+        if (res.status == 200) {
+            let resData = await res.json()
+            let graphData = {
+                nodes: [],
+                edges: []
             }
-        })
-
-        resData.data.forEach(element => {
-            let url = new URL(element, resData.parent)
-
-            let isInternal = url.hostname == new URL(resData.parent).hostname
 
             graphData.nodes.push({
                 data: {
-                    id: url.href,
-                    label: url.href,
-                    internal: isInternal
-                },
-                classes: [
-                    (isInternal ? "internal" : "")
-                ]
+                    id: resData.parent,
+                    label: resData.parent
+                }
             })
 
-            graphData.edges.push({
-                data: {
-                    id: resData.parent + ":" + url.href,
-                    source: resData.parent,
-                    target: url.href,
-                    internal: isInternal
-                },
-                classes: [
-                    (isInternal ? "internal" : "")
-                ]
-            })
+            resData.data.forEach(element => {
+                let url = new URL(element, resData.parent)
 
-            if (currentDepth + 1 < depth) {
-                doScrape(url.href, depth, currentDepth + 1)
-            }
-        });
+                let isInternal = url.hostname == new URL(resData.parent).hostname
 
-        cy.add(graphData)
+                graphData.nodes.push({
+                    data: {
+                        id: url.href,
+                        label: url.href,
+                        internal: isInternal
+                    },
+                    classes: [
+                        (isInternal ? "internal" : "")
+                    ]
+                })
+
+                graphData.edges.push({
+                    data: {
+                        id: resData.parent + ":" + url.href,
+                        source: resData.parent,
+                        target: url.href,
+                        internal: isInternal
+                    },
+                    classes: [
+                        (isInternal ? "internal" : "")
+                    ]
+                })
+
+                if (currentDepth + 1 < depth) {
+                    doScrape(url.href, depth, currentDepth + 1)
+                }
+            });
+
+            cy.add(graphData)
+        }
     })
 }
 
 function applyLayout() {
     cy.center()
-    cy.layout({name:"fcose",nodeDimensionsIncludeLabels:true,avoidOverlaps:true}).run()
+    cy.layout({name:"circle",nodeDimensionsIncludeLabels:false,avoidOverlap:true,animate:false}).run()
 }
 
 document.getElementById("layout-button").onclick = event => {
